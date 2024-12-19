@@ -15,18 +15,23 @@ import fastifyCompress from "@fastify/compress";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const maindir = "public";
-const port = 8080;
+const Port = process.env.PORT || 8080;
 
 const bare = createBareServer("/bs/");
 
-const serverFactory = (handler) => 
-  createServer(handler).on("upgrade", (req, socket, head) => {
-    if (req.url && req.url.startsWith("/w")) {
-      wisp.routeRequest(req, socket, head);
-    } else {
-      socket.destroy();
-    }
-  });
+const serverFactory = (handler) => {
+  return createServer()
+    .on("request", (req, res) => {
+      if (bare.shouldRoute(req)) {
+        bare.routeRequest(req, res);
+      } else {
+        handler(req, res);
+      }
+    })
+    .on("upgrade", (req, socket, head) => {
+      if (req.url.endsWith("/w/")) wisp.routeRequest(req, socket, head);
+    });
+};
 
 const app = fastify({ logger: false, serverFactory });
 
@@ -74,7 +79,9 @@ app.get("/suggest", async (request, reply) => {
 
 const files = [
   { route: "/gms", file: "games.html" },
-  { route: "/g", file: "go.html" }
+  { route: "/g", file: "go.html" },
+  { route: "/fu", file: "fun.html" },
+  { route: "/cdits", file: "credits.html" },
 ];
 
 files.forEach(({ route, file }) =>
@@ -82,9 +89,9 @@ files.forEach(({ route, file }) =>
 );
 
 try {
-  const address = await app.listen({ port });
+  const address = app.listen({ Port });
   console.log("Solar is listening on:");
-  console.log(`\thttp://localhost:${port}`);
+  console.log(`\thttp://localhost:${Port}`);
   console.log(`\t${address}`);
 } catch (err) {
   console.error(err);
