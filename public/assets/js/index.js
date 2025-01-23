@@ -114,13 +114,6 @@ function handleProxyChoice(service, url) {
   }
 }
 
-function ocgh() {
-  handleProxyChoice("Github", "https://github.com/usesolar/solar");
-}
-function ocdc() {
-  handleProxyChoice("Discord", "https://dsc.gg/usesolar");
-}
-
 const input = document.getElementById("search-input");
 input.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
